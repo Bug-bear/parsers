@@ -24,13 +24,16 @@ using namespace std;
 const int NFLEN = 36;	//length of sniffed noise lines
 const int PKTLEN = 66;	//length of packet payload lines
 const int PKTDUMP = 54;	//length of unwanted packet payload
+const int ED = -91;
 
 int main(){
 	string line;
 	int sum = 0;
 	int ctr = 0;
 	double average = 0;
-	int freq = 0;
+	// record channels regardless of line types
+	int lastFreq = 12;
+	int freq = 12;
 
   	while(getline(cin,line)){
 		//cout<<line.length()<<endl;
@@ -38,7 +41,6 @@ int main(){
 		std::stringstream ss;
 
 		if(line.length()==NFLEN){
-			ctr++;
 			string dump, nfaHex, nfbHex, chanHex;
 			int nfa, nfb, noiseFloor, chan;
 
@@ -48,19 +50,33 @@ int main(){
 			ss<<std::hex<<nfaHex; ss>>nfa; ss.clear();
 			ss<<std::hex<<nfbHex; ss>>nfb; ss.clear();
 			noiseFloor = nfa*100 + nfb;
-			sum += noiseFloor;
 			//extract channel
 			s>>dump; s>>chanHex;
 			ss<<std::hex<<chanHex; ss>>chan; ss.clear();
 			s.ignore();
 			freq = chan;
 			//cout<<noiseFloor<<" "<<chan<<endl;
+
+			if(freq==lastFreq){
+				sum += noiseFloor;
+				ctr++;
+			} else{
+				sum = noiseFloor;
+				lastFreq=freq;
+				ctr = 1;
+			}
 		}
 		else if(line.length()==PKTLEN){
+			if(freq!=lastFreq){
+				sum = 0;
+				lastFreq=freq;
+				ctr = 0;
+			}
+
 			//calculate the average of preceeding noise floors
 			if(ctr!=0){
 				average = (double)sum/ctr;
-				cout<<setw(3)<<freq<<" "<<fixed<<setprecision(3)<<setw(6)<<average<<" ";
+				cout<<setw(3)<<freq<<" "<<fixed<<setprecision(3)<<setw(6)<<average+ED<<" "<<ctr<<" ";
 				//cout<< sum<<" "<<ctr<<" "<<(double)sum/ctr<<endl;
 				sum = 0; ctr = 0; average = 0;
 			}
