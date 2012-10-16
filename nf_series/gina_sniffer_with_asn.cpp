@@ -40,22 +40,17 @@ int main(){
 	// record channels regardless of line types
 	int lastFreq = 12;
 	int freq = 12;
-	int lastSeq = 0;
-	int seq = 0;
-	int ln = 0;
 
   	while(getline(cin,line)){
-		ln++;
 		//cout<<line.length()<<endl;
 		std::stringstream s(line);
 		std::stringstream ss;
 
-		if(line.length()==NFLEN){ //need to check validity
+		if(line.length()==NFLEN){
 			string dump, nfaHex, nfbHex, chanHex;
 			int nfa, nfb, noiseFloor, chan;
 
 			//s>>dump>>dump>>dump>>dump>>dump;
-
 			s>>dump>>dump>>dump; dump = ""; s>>dump; if(dump!="08") continue;
 			dump = ""; s>>dump; if(dump!="1a") continue;
 
@@ -85,9 +80,6 @@ int main(){
 			ss<<std::hex<<line.substr(PKTDUMP,2);
 			ss>>seq;	ss.clear();
 
-			if(seq==lastSeq) continue;
-			lastSeq=seq;
-
 			if(freq!=lastFreq){
 				sum = 0;
 				lastFreq=freq;
@@ -97,11 +89,22 @@ int main(){
 			//calculate the average of preceeding noise floors
 			if(ctr!=0){
 				average = (double)sum/ctr;
-				cout<<setw(3)<<freq<<" "<<fixed<<setprecision(3)<<setw(6)<<average+ED<<" "<<setw(3)<<ctr<<" ";//<<ln<<" ";
+				cout<<setw(3)<<freq<<" "<<fixed<<setprecision(3)<<setw(6)<<average+ED<<" "<<setw(3)<<ctr<<" ";
 				//cout<< sum<<" "<<ctr<<" "<<(double)sum/ctr<<endl;
 				sum = 0; ctr = 0; average = 0;
 			}
+			/*
+			ss<<std::hex<<line.substr(44,2);
+			ss>>freq;	ss.clear();
+			cout<<setw(3)<<freq<<" ";
+			*/
 
+			//extract asn from pkt payload
+			int asn = 0;
+			string asnStr = line.substr(34,10);
+			ss<<std::hex<<flipEndian(asnStr);
+			ss>>asn; ss.clear();
+			cout<<asn<<" ";
 			cout<<setw(3)<<seq<<endl;
 			//cout<<setw(3)<<line.substr(PKTDUMP,2)<<endl;
 		}

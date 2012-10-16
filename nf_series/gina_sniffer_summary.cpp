@@ -1,5 +1,9 @@
 /**
 summarise parsed records of gina sniffer (for NF-ETX relationship)
+
+input: output from gina_sinffer_with_asn
+
+output: (channel) (average noise floor) (batch PDR)
 */
 
 #include <iostream>
@@ -58,7 +62,7 @@ int main(){
 			ctr++;
 			//cout<<freq<<" "<<sum/ctr<<" "<<lastSeq<<" "<<seq<<endl;
 		} else{
-			cout<<lastFreq<<" "<<sum/ctr<<" "<<lastSeq<<" "<<seq<<endl;
+			cout<<lastFreq<<" "<<sum/ctr<<" "<<fixed<<setprecision(3)<<(double)ctr/100<<" "<<ln<<endl;
 			ctr=1;
 			lastFreq = freq;
 			lastSeq = seq;
