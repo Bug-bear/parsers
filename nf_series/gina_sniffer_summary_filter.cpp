@@ -27,7 +27,9 @@ int main(){
 	double average = 0;
 	int lastFreq, freq = 0;
 	bool filtering = false;
-
+	int denominator = 100;
+	int correction = 0;
+	
   	while(getline(cin,line)){
 		std::stringstream s(line);
 		ln++;
@@ -46,22 +48,28 @@ int main(){
 		if(lastFreq==freq){
 			sum += noiseFloor;
 			ctr++;
+			if(noiseFloor == 0){
+				correction = 1;
+			}
+			lastSeq = seq;
+			denominator = 100;
 			//cout<<freq<<" "<<sum/ctr<<" "<<lastSeq<<" "<<seq<<endl;
 		} else{
-			lastFreq = freq;
-			
-			filtering = false;
 			if(seq - lastSeq > 0){ //premature channel switch
+				//lastFreq = freq;
 				filtering = true;
+				denominator = lastSeq;
+			} else{
+				filtering = false;
 			}
 			if(filtering) continue;
 			
-		
-			cout<<lastFreq<<" "<<sum/ctr<<" "<<fixed<<setprecision(3)<<(double)ctr/100<<" "<<ln<<" "<<lastSeq<<" "<<seq<<endl;
-			
+			cout<<lastFreq<<" "<<sum/(ctr-correction)<<" "<<fixed<<setprecision(3)<<(double)ctr/denominator<<" "<<ln<<" "<<lastSeq<<" "<<seq<<endl;
+			correction = 0;
+			lastFreq = freq;			
 			ctr=1;
 			sum = noiseFloor;
+			lastSeq = seq;
 		}
-		lastSeq = seq;
 	}
 }
